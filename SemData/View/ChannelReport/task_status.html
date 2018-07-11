@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>渠道计划报表</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="/res/js/layui/css/layui.css"  media="all">
+    <link rel="stylesheet" href="/res/css/sem/table.css"  media="all">
+</head>
+<body style="margin: 10px 15px;">
+
+<span class="layui-breadcrumb">
+  <a><cite>SEM中心</cite></a>
+  <a><cite>SEM报表</cite></a>
+  <a><cite>总任务进度</cite></a>
+</span>
+
+<fieldset class="layui-elem-field layui-field-title" style="margin-top: 20px;">
+</fieldset>
+
+<table class="layui-table" lay-data="{limit: 10,page:true, url:'/SemData/ChannelReport/getTask'}" lay-filter="demoEvent">
+    <thead>
+    <tr>
+        <th lay-data="{field:'id', width:80}">ID</th>
+        <th lay-data="{field:'task_module', width:120}">任务模块</th>
+        <th lay-data="{field:'task_name', width:120}">任务名</th>
+        <th lay-data="{field:'task_level', width:120}">任务等级</th>
+        <th lay-data="{field:'finish', width:120, event:'setFinish'}">完成情况</th>
+    </tr>
+    </thead>
+</table>
+
+<script type="text/javascript" src="/res/lib/jquery/jquery-1.10.2.min.js"></script>
+<script src="/res/js/layui/layui.js" charset="utf-8"></script>
+<!-- 注意：如果你直接复制所有代码到本地，上述js路径需要改成你本地的 -->
+<script>
+    layui.use('element', function(){
+    });
+    layui.use('table', function(){
+        var table = layui.table;
+        //监听单元格事件
+        table.on('tool(demoEvent)', function(obj){
+            var data = obj.data;
+            if(obj.event === 'setFinish'){
+                layer.prompt({
+                    formType: 2
+                    ,title: '修改 ID 为 ['+ data.id +'] 的完成状态'
+                    ,value: data.finish
+                }, function(value, index){
+                    layer.close(index);
+                    //这里一般是发送修改的Ajax请求
+                    $.ajax({
+                        type: "POST",
+                        url: "/SemData/ChannelReport/setTaskFinish",
+                        data: {"id":data.id,"finish":value},
+                        async: false,
+                        success: function(){
+                        }
+                    })
+                    //同步更新表格和缓存对应的值
+                    obj.update({
+                        finish: value
+                    });
+                });
+            }
+        });
+    });
+</script>
+</body>
+</html>

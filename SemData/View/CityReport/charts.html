@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>城市报表</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="/res/js/layui/css/layui.css"  media="all">
+    <link rel="stylesheet" href="/res/css/sem/table.css"  media="all">
+</head>
+<body style="margin-left:15px;margin-top: 20px;">
+
+<form method="post" class="layui-form" action="/SemData/CityReport/charts" id="form1">
+
+    <div class="layui-form-item">
+
+        <div class="layui-inline">
+            <div class="layui-inline">
+                <label class="layui-form-label">日期范围：</label>
+                <div class="layui-input-inline">
+                    <input type="text" class="layui-input" name="date_rand" id="date_rand" placeholder=" - " value="{$Think.post.date_rand}">
+                </div>
+            </div>
+        </div>
+
+        <div class="layui-inline">
+            <label class="layui-form-label">平台：</label>
+            <div class="layui-input-block">
+                <select name="is_pc">
+                    <option value="">直接选择或搜索选择</option>
+                    <option value="open" <eq name="Think.post.is_pc" value="open">selected="selected"</eq>>展开</option>
+                    <option value="close" <eq name="Think.post.is_pc" value="close">selected="selected"</eq>>聚拢</option>
+                    <option <eq name="Think.post.is_pc" value="1">selected="selected"</eq> value="1" >PC</option>
+                    <option <eq name="Think.post.is_pc" value="2">selected="selected"</eq> value="2" >H5</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="layui-inline">
+            <label class="layui-form-label">渠道：</label>
+            <div class="layui-input-inline">
+                <select name="channel" lay-search="">
+                    <option value="">直接选择或搜索选择</option>
+                    <option value="open" <eq name="Think.post.channel" value="open">selected="selected"</eq>>展开</option>
+                    <option value="close" <eq name="Think.post.channel" value="close">selected="selected"</eq>>聚拢</option>
+                    <foreach name="channel" key="k" item="vo">
+                        <option value="{$k}" <eq name="Think.post.channel" value="$k">selected="selected"</eq>>{$vo}</option>
+                    </foreach>
+                </select>
+            </div>
+        </div>
+
+        <div class="layui-inline">
+            <label class="layui-form-label">城市：</label>
+            <div class="layui-input-inline">
+                <select name="hot_flag" id="hot_flag" lay-search="" lay-filter="hot_flag">
+                    <option value="">直接选择或搜索选择</option>
+                    <option value="open" <eq name="Think.post.hot_flag" value="open">selected="selected"</eq>>展开</option>
+                    <option value="close" <eq name="Think.post.hot_flag" value="close">selected="selected"</eq>>聚拢</option>
+                    <option <eq name="Think.post.hot_flag" value="1">selected="selected"</eq> value="1" >重点城市</option>
+                    <option <eq name="Think.post.hot_flag" value="0">selected="selected"</eq> value="0" >一般城市</option>
+                    <option <eq name="Think.post.hot_flag" value="2">selected="selected"</eq> value="2" >普通城市</option>
+                </select>
+            </div>
+            <div class="layui-input-inline">
+                <select name="city" id="city" lay-search="" lay-filter="city">
+                    <option value="">直接选择或搜索选择</option>
+                    <option value="open" <eq name="Think.post.city" value="open">selected="selected"</eq>>展开</option>
+                    <option value="close" <eq name="Think.post.city" value="close">selected="selected"</eq>>聚拢</option>
+                    <foreach name="citys" item="vo">
+                        <option value="{$vo.simpname}" data-state="{$vo.hot_flag}" <eq name="Think.post.city" value="$vo.simpname">selected="selected"</eq>>{$vo.simpname}</option>
+                    </foreach>
+                </select>
+            </div>
+        </div>
+
+        <div class="layui-inline">
+            <label class="layui-form-label">合计：</label>
+            <div class="layui-input-block">
+                <select name="group_type">
+                    <option  <eq name="Think.post.group_type" value="day">selected="selected"</eq> selected="selected" value="day" >分日</option>
+                    <option <eq name="Think.post.group_type" value="weeks">selected="selected"</eq> value="weeks" >分周</option>
+                    <option <eq name="Think.post.group_type" value="months">selected="selected"</eq> value="months" >分月</option>
+                    <option <eq name="Think.post.group_type" value="sum">selected="selected"</eq> value="sum" >合计</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="layui-inline">
+            <label class="layui-form-label">数据图类型：</label>
+            <div class="layui-input-block">
+                <select name="chart_type">
+                    <option <eq name="Think.post.chart_type" value="ordertype_line">selected="selected"</eq> value="ordertype_line" >数据折线图</option>
+                    <option <eq name="Think.post.chart_type" value="citytype_bar">selected="selected"</eq> value="citytype_bar" >分组堆叠柱状图</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="layui-inline">
+            <button class="layui-btn" id="show">查询</button>
+        </div>
+
+    </div>
+
+</form>
+
+
+<!--统计表-->
+<div class="layui-tab-item layui-show">
+    <div id="container" style="width:100%;height:600px;"></div>
+</div>
+
+<script type="text/javascript" src="/res/lib/jquery/jquery-1.10.2.min.js"></script>
+<script type="text/javascript" src="/res/lib/highchart6.0.2/highcharts.js"></script>
+<script src="/res/js/layui/layui.js" charset="utf-8"></script>
+<!-- 注意：如果你直接复制所有代码到本地，上述js路径需要改成你本地的 -->
+<script>
+    layui.use(['form' , 'laydate' , 'element'], function(){
+        var layer = layui.layer
+            ,form = layui.form
+            ,laydate = layui.laydate;
+
+        //日期范围
+        laydate.render({
+            elem: '#date_rand'
+            ,range: true
+        });
+
+        form.on('select(hot_flag)', function(data){
+            var state = data.value;
+            if(state==0||state==1||state==2){
+                $('#city option').each(function () {
+                    if($(this).attr("data-state")==state){
+                        $(this).prop('disabled',false);
+                    }else{
+                        if($(this).val()!=''&&$(this).val()!='open'&&$(this).val()!='close'){
+                            $(this).prop('disabled',true);
+                        }
+                    }
+                })
+            }else{
+                $('#city option').each(function () {
+                    $(this).prop('disabled',false);
+                })
+            }
+            form.render('select');
+        });
+
+        layui.define(["jquery"], function (exports) {
+            var jQuery = layui.jquery;
+            (function ($) {
+                //查询
+                $('#show').on('click',function(){
+                    if($('#date_rand').val()==''){
+                        layer.msg('请选择日期范围');
+                        return false;
+                    }
+                    $('input[name="is_download"]').val(0);
+                    $('#form1').submit();
+                });
+                //下载
+                $('#download').on('click',function(){
+                    if($('#date_rand').val()==''){
+                        layer.msg('请选择日期范围');
+                        return false;
+                    }
+                    $('input[name="is_download"]').val(1);
+                    $('#form1').submit();
+                });
+                //分页
+                $('#txtPageNum').on('change', function () {
+                    $('#pageInput').val(1);
+                    $('#pageSizeInput').val($(this).val());
+                    $('#form1').submit();
+                });
+                $('.page-change').on('click', function () {
+                    $('#pageInput').val($(this).data('page'));
+                    $('#form1').submit();
+                });
+            })(jQuery);
+        });
+    });
+
+
+    <if condition="$Think.post.chart_type eq 'citytype_bar'">
+        Highcharts.chart('container',{
+            chart: {
+                type: 'column'
+            },
+            title: {
+                text: '分组堆叠柱状图'
+            },
+            credits: {
+                text: '土拨鼠',
+                href: 'http://erp.tobosu.cn/'
+            },
+            xAxis:{
+                categories: {$categories}
+            },
+            yAxis: {
+                allowDecimals: false,
+                min: 0,
+                title: {
+                    text: '订单数量'
+                }
+            },
+            plotOptions: {
+                column: {
+                    stacking: 'normal'
+                }
+            },
+            series: {$series}
+        });
+    <elseif condition="$Think.post.chart_type eq 'ordertype_line'"/>
+        Highcharts.chart('container', {
+            title: {
+                text: '城市报表折线图'
+            },
+            credits: {
+                text: '土拨鼠',
+                href: 'http://erp.tobosu.cn/'
+            },
+            xAxis: {
+                title: {
+                    text: '时间轴'
+                }
+            },
+            yAxis: {
+                title: {
+                    text: '数据轴'
+                }
+            },
+            xAxis: {
+                categories: [{$chart_arr['date']|implode=',',###}]
+            },
+            legend: {
+                layout: 'vertical',
+                    align: 'right',
+                    verticalAlign: 'middle'
+            },
+            series: [{visible: false,name: '展现', data: [{$chart_arr['views']|implode=',',###}]},
+            {visible: false,name: '点击', data: [{$chart_arr['clicks']|implode=',',###}]},
+            {visible: false,name: '消费', data: [{$chart_arr['cost']|implode=',',###}]},
+            {visible: false,name: '现金', data: [{$chart_arr['cash']|implode=',',###}]},
+            {visible: false,name: '点击率', data: [{$chart_arr['click_rate']|implode=',',###}]},
+            {visible: false,name: '点击单价', data: [{$chart_arr['click_unit_cost']|implode=',',###}]},
+            {visible: false,name: '未处理', data: [{$chart_arr['status1_order_nums']|implode=',',###}]},
+            {visible: false,name: '登记数', data: [{$chart_arr['order_nums']|implode=',',###}]},
+            {visible: false,name: '登记单价', data: [{$chart_arr['order_nums_unit_cost']|implode=',',###}]},
+            {visible: false,name: '登记率', data: [{$chart_arr['order_nums_rate']|implode=',',###}]},
+            {visible: true,name: '有效数', data: [{$chart_arr['effect_order_nums']|implode=',',###}]},
+            {visible: false,name: '有效单价', data: [{$chart_arr['effect_order_nums_unit_cost']|implode=',',###}]},
+            {visible: false,name: '有效率', data: [{$chart_arr['effect_order_nums_rate']|implode=',',###}]},
+            {visible: false,name: '未分单', data: [{$chart_arr['status4_order_nums']|implode=',',###}]},
+            {visible: false,name: '不可分', data: [{$chart_arr['status9_order_nums']|implode=',',###}]},
+            {visible: false,name: '待定', data: [{$chart_arr['status3_order_nums']|implode=',',###}]},
+            {visible: false,name: '无效', data: [{$chart_arr['status2_order_nums']|implode=',',###}]},
+            {visible: false,name: '未处理', data: [{$chart_arr['status0_order_nums']|implode=',',###}]},
+            {visible: false,name: '重单', data: [{$chart_arr['status1_order_nums']|implode=',',###}]}],
+            responsive: {
+                rules: [{
+                    condition: {
+                        maxWidth: 500
+                    },
+                    chartOptions: {
+                        legend: {
+                            layout: 'horizontal',
+                            align: 'center',
+                            verticalAlign: 'bottom'
+                        }
+                    }
+                }]
+            }
+        });
+    </if>
+
+</script>
+</body>
+</html>

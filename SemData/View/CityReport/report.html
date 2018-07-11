@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>城市报表</title>
+    <meta name="renderer" content="webkit">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <link rel="stylesheet" href="/res/js/layui/css/layui.css"  media="all">
+    <link rel="stylesheet" href="/res/css/sem/table.css"  media="all">
+</head>
+<body style="margin-left:15px;">
+
+<form method="post" class="layui-form" action="/SemData/CityReport/report" id="form1">
+
+    <div class="layui-form-item toolbar-wrap public-signal-toolbar">
+
+        <div class="layui-inline">
+            <div class="layui-inline">
+                <label class="layui-form-label">日期范围：</label>
+                <div class="layui-input-inline">
+                    <input type="text" class="layui-input" name="date_rand" id="date_rand" placeholder=" - " value="{$Think.post.date_rand}">
+                </div>
+            </div>
+        </div>
+
+        <div class="layui-inline">
+            <label class="layui-form-label">平台：</label>
+            <div class="layui-input-block">
+                <select name="is_pc">
+                    <option value="">直接选择或搜索选择</option>
+                    <option value="open" <eq name="Think.post.is_pc" value="open">selected="selected"</eq>>展开</option>
+                    <option value="close" <eq name="Think.post.is_pc" value="close">selected="selected"</eq>>聚拢</option>
+                    <option <eq name="Think.post.is_pc" value="1">selected="selected"</eq> value="1" >PC</option>
+                    <option <eq name="Think.post.is_pc" value="2">selected="selected"</eq> value="2" >H5</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="layui-inline">
+            <label class="layui-form-label">渠道：</label>
+            <div class="layui-input-inline">
+                <select name="channel" lay-search="">
+                    <option value="">直接选择或搜索选择</option>
+                    <option value="open" <eq name="Think.post.channel" value="open">selected="selected"</eq>>展开</option>
+                    <option value="close" <eq name="Think.post.channel" value="close">selected="selected"</eq>>聚拢</option>
+                    <foreach name="channel" key="k" item="vo">
+                        <option value="{$k}" <eq name="Think.post.channel" value="$k">selected="selected"</eq>>{$vo}</option>
+                    </foreach>
+                </select>
+            </div>
+        </div><br/>
+
+        <div class="layui-inline">
+            <label class="layui-form-label">城市：</label>
+            <div class="layui-input-inline">
+                <select name="hot_flag" id="hot_flag" lay-search="" lay-filter="hot_flag">
+                    <option value="">直接选择或搜索选择</option>
+                    <option value="open" <eq name="Think.post.hot_flag" value="open">selected="selected"</eq>>展开</option>
+                    <option value="close" <eq name="Think.post.hot_flag" value="close">selected="selected"</eq>>聚拢</option>
+                    <option <eq name="Think.post.hot_flag" value="1">selected="selected"</eq> value="1" >重点城市</option>
+                    <option <eq name="Think.post.hot_flag" value="0">selected="selected"</eq> value="0" >一般城市</option>
+                    <option <eq name="Think.post.hot_flag" value="2">selected="selected"</eq> value="2" >普通城市</option>
+                </select>
+            </div>
+            <div class="layui-input-inline">
+                <select name="city" id="city" lay-search="" lay-filter="city">
+                    <option value="">直接选择或搜索选择</option>
+                    <option value="open" <eq name="Think.post.city" value="open">selected="selected"</eq>>展开</option>
+                    <option value="close" <eq name="Think.post.city" value="close">selected="selected"</eq>>聚拢</option>
+                    <foreach name="citys" item="vo">
+                        <option value="{$vo.simpname}" data-state="{$vo.hot_flag}" <eq name="Think.post.city" value="$vo.simpname">selected="selected"</eq>>{$vo.simpname}</option>
+                    </foreach>
+                </select>
+            </div>
+        </div>
+
+        <div class="layui-inline">
+            <label class="layui-form-label">合计：</label>
+            <div class="layui-input-block">
+                <select name="group_type">
+                    <option  <eq name="Think.post.group_type" value="day">selected="selected"</eq> selected="selected" value="day" >分日</option>
+                    <option <eq name="Think.post.group_type" value="weeks">selected="selected"</eq> value="weeks" >分周</option>
+                    <option <eq name="Think.post.group_type" value="months">selected="selected"</eq> value="months" >分月</option>
+                    <option <eq name="Think.post.group_type" value="sum">selected="selected"</eq> value="sum" >合计</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="layui-inline">
+            <input type="hidden" name="is_download" value="0">
+            <button class="layui-btn" id="show">查询</button>
+            <button class="layui-btn" id="download">下载</button>
+        </div>
+
+    </div>
+
+    <!--------------------------------------------------------------------->
+    <input name="page" value="{$pageData.pageInfo.page}" id="pageInput" type="hidden" />
+    <input name="pageSize" value="{$pageData.pageInfo.pageSize}" id="pageSizeInput" type="hidden" />
+    <!--------------------------------------------------------------------->
+</form>
+
+<!--列表-->
+<table border="0" cellspacing="0" cellpadding="0" class="ltable public-signal-tb">
+    <tr class="first-tr">
+        <th align="center" width="600">日期</th>
+        <th align="center" width="600">平台</th>
+        <th align="center" width="600">渠道</th>
+        <th align="center" width="600">城市类型</th>
+        <th align="center" width="600">城市</th>
+        <th align="center" width="600">展现</th>
+        <th align="center" width="600">点击</th>
+        <th align="center" width="600">消费</th>
+        <th align="center" width="600">现金</th>
+        <th align="center" width="600">返点</th>
+        <th align="center" width="600">点击率</th>
+        <th align="center" width="600">点击单价</th>
+        <th align="center" width="600">登记</th>
+        <th align="center" width="600">登记单价</th>
+        <th align="center" width="600">登记率</th>
+        <th align="center" width="600">发标</th>
+        <th align="center" width="600">发标单价</th>
+        <th align="center" width="600">发标率</th>
+        <th align="center" width="600">有效</th>
+        <th align="center" width="600">有效单价</th>
+        <th align="center" width="600">有效率</th>
+        <th align="center" width="600">未分单</th>
+        <th align="center" width="600">不可分</th>
+        <th align="center" width="600">待定</th>
+        <th align="center" width="600">无效</th>
+        <th align="center" width="600">未处理</th>
+        <th align="center" width="600">重单</th>
+    </tr>
+    <tr style="background:#006600;">
+        <td align="center" width="600" style="color: white">合计</td>
+        <td align="center" width="600" style="color: white">{$sum_data.device}</td>
+        <td align="center" width="600" style="color: white">{$sum_data.channel}</td>
+        <td align="center" width="600" style="color: white">{$sum_data.hot_flag}</td>
+        <td align="center" width="600" style="color: white">{$sum_data.city}</td>
+        <td align="center" width="600" style="color: white">{$sum_data.views}</td>
+        <td align="center" width="600" style="color: white">{$sum_data.clicks}</td>
+        <td align="center" width="600" style="color: white">{$sum_data.cost}</td>
+        <td align="center" width="600" style="color: white">{$sum_data.cash}</td>
+        <td align="center" width="600" style="color: white">{$sum_data.returnpoint}</td>
+        <td align="center" width="600" style="color: white">{$sum_data.click_rate}</td>
+        <td align="center" width="600" style="color: white">{$sum_data.click_unit_cost}</td>
+        <td align="center" width="600" style="color: white">{$sum_data.order_nums}</td>
+        <td align="center" width="600" style="color: white">{$sum_data.order_nums_unit_cost}</td>
+        <td align="center" width="600" style="color: white">{$sum_data.order_nums_rate}</td>
+        <td align="center" width="600" style="color: white">{$sum_data.real_order_nums}</td>
+        <td align="center" width="600" style="color: white">{$sum_data.real_order_nums_unit_cost}</td>
+        <td align="center" width="600" style="color: white">{$sum_data.real_order_nums_rate}</td>
+        <td align="center" width="600" style="color: white">{$sum_data.effect_order_nums}</td>
+        <td align="center" width="600" style="color: white">{$sum_data.effect_order_nums_unit_cost}</td>
+        <td align="center" width="600" style="color: white">{$sum_data.effect_order_nums_rate}</td>
+        <td align="center" width="600" style="color: white">{$sum_data.status4_order_nums}</td>
+        <td align="center" width="600" style="color: white">{$sum_data.status9_order_nums}</td>
+        <td align="center" width="600" style="color: white">{$sum_data.status3_order_nums}</td>
+        <td align="center" width="600" style="color: white">{$sum_data.status2_order_nums}</td>
+        <td align="center" width="600" style="color: white">{$sum_data.status0_order_nums}</td>
+        <td align="center" width="600" style="color: white">{$sum_data.status1_order_nums}</td>
+    </tr>
+    <volist name="pageData.dataList" id="item">
+        <tr <?php if(in_array(date('w',strtotime($item['report_date'])),array('0','6'))){ ?>style="background-color:rgba(128, 255, 214, 0.52);"<?php } ?>  >
+        <td align="center" width="600">{$item.report_date}</td>
+        <td align="center" width="600"><?php if($item['device']==2){?>H5<?php }elseif($item['device']==1){ ?>PC<?php }else{ ?>{$item.device}<?php } ?></td>
+        <td align="center" width="600"><?php echo !empty($channel[$item['channel']])?$channel[$item['channel']]:$item['channel'];?></td>
+        <td align="center" width="600">{$item.hot_flag}</td>
+        <td align="center" width="600">{$item.city}</td>
+        <td align="center" width="600">{$item.views}</td>
+        <td align="center" width="600">{$item.clicks}</td>
+        <td align="center" width="600">{$item.cost}</td>
+        <td align="center" width="600">{$item.cash}</td>
+        <td align="center" width="600">{$item.returnpoint}</td>
+        <td align="center" width="600">{$item.click_rate}</td>
+        <td align="center" width="600">{$item.click_unit_cost}</td>
+        <td align="center" width="600">{$item.order_nums}</td>
+        <td align="center" width="600">{$item.order_nums_unit_cost}</td>
+        <td align="center" width="600">{$item.order_nums_rate}</td>
+        <td align="center" width="600">{$item.real_order_nums}</td>
+        <td align="center" width="600">{$item.real_order_nums_unit_cost}</td>
+        <td align="center" width="600">{$item.real_order_nums_rate}</td>
+        <td align="center" width="600">{$item.effect_order_nums}</td>
+        <td align="center" width="600">{$item.effect_order_nums_unit_cost}</td>
+        <td align="center" width="600">{$item.effect_order_nums_rate}</td>
+        <td align="center" width="600">{$item.status4_order_nums}</td>
+        <td align="center" width="600">{$item.status9_order_nums}</td>
+        <td align="center" width="600">{$item.status3_order_nums}</td>
+        <td align="center" width="600">{$item.status2_order_nums}</td>
+        <td align="center" width="600">{$item.status0_order_nums}</td>
+        <td align="center" width="600">{$item.status1_order_nums}</td>
+        </tr>
+    </volist>
+</table>
+<!--/列表-->
+<include file="./TbsApp/Common/View/Public/page.html" />
+
+<script type="text/javascript" src="/res/lib/jquery/jquery-1.10.2.min.js"></script>
+<script src="/res/js/layui/layui.js" charset="utf-8"></script>
+<!-- 注意：如果你直接复制所有代码到本地，上述js路径需要改成你本地的 -->
+<script>
+    layui.use(['form' , 'laydate' , 'element'], function(){
+        var layer = layui.layer
+            ,form = layui.form
+            ,laydate = layui.laydate;
+
+        //日期范围
+        laydate.render({
+            elem: '#date_rand'
+            ,range: true
+        });
+
+        form.on('select(hot_flag)', function(data){
+            var state = data.value;
+            if(state==0||state==1||state==2){
+                $('#city option').each(function () {
+                    if($(this).attr("data-state")==state){
+                        $(this).prop('disabled',false);
+                    }else{
+                        if($(this).val()!=''&&$(this).val()!='open'&&$(this).val()!='close'){
+                            $(this).prop('disabled',true);
+                        }
+                    }
+                })
+            }else{
+                $('#city option').each(function () {
+                    $(this).prop('disabled',false);
+                })
+            }
+            form.render('select');
+        });
+
+        layui.define(["jquery"], function (exports) {
+            var jQuery = layui.jquery;
+            (function ($) {
+                //查询
+                $('#show').on('click',function(){
+                    if($('#date_rand').val()==''){
+                        layer.msg('请选择日期范围');
+                        return false;
+                    }
+                    $('input[name="is_download"]').val(0);
+                    $('#form1').submit();
+                });
+                //下载
+                $('#download').on('click',function(){
+                    if($('#date_rand').val()==''){
+                        layer.msg('请选择日期范围');
+                        return false;
+                    }
+                    $('input[name="is_download"]').val(1);
+                    $('#form1').submit();
+                });
+                //分页
+                $('#txtPageNum').on('change', function () {
+                    $('#pageInput').val(1);
+                    $('#pageSizeInput').val($(this).val());
+                    $('#form1').submit();
+                });
+                $('.page-change').on('click', function () {
+                    $('#pageInput').val($(this).data('page'));
+                    $('#form1').submit();
+                });
+            })(jQuery);
+        });
+    });
+</script>
+</body>
+</html>
